@@ -8,6 +8,7 @@ SET (ROUTER_DIR "${PROJECT_ROOT}/Router")
 SET (SERVER_DIR "${PROJECT_ROOT}/Server")
 SET (CLIENT_DIR "${PROJECT_ROOT}/Client")
 SET (MESSAGE_DIR "${PROJECT_ROOT}/Message")
+SET (ROUTING_DIR "${PROJECT_ROOT}/Routing")
 
 add_executable(router
         ${ROUTER_DIR}/main.cpp
@@ -34,6 +35,16 @@ add_executable(client
         ${MESSAGE_DIR}/Message.cpp
         ${MESSAGE_DIR}/Message.h
         ${PROJECT_ROOT}/config.h
+)
+
+add_executable(routing
+        ${ROUTING_DIR}/main.cpp
+        ${ROUTING_DIR}/Node.cpp
+        ${ROUTING_DIR}/Node.h
+        ${ROUTING_DIR}/Network.cpp
+        ${ROUTING_DIR}/Network.h
+        ${ROUTING_DIR}/CommandParser.cpp
+        ${ROUTING_DIR}/CommandParser
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
