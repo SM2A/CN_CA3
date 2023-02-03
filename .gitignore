@@ -1,7 +1,7 @@
 /.vscode
 /.idea
 *.out
-/cmake-build-debug-*
+/cmake-build-*
 *.dt
 *.txt
 *.hex
