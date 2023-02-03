@@ -188,12 +188,10 @@ void Router::sendPacket()
         m_messages.lock();
         if (!messages.empty())
         {
-            // cerr<<"SENDING: "<<messages.size()<<" ID: "<<messages[0].getPacketId()<< " size: "<<messages[0].getWSize()<<endl;
             if (messages[0].isAck())
                 send(this->client_fd, messages[0].getPacket(), PACKET_SIZE, 0);  
             else
                 send(this->server_fd, messages[0].getPacket(), PACKET_SIZE, 0); 
-            // cerr<<"ID: "<<messages[0].getPacketId()<<" SIZE: "<<messages[0].getWSize()<<" remain: "<<messages.size() - 1<<" MSG: "<<messages[0].getMsg()<<endl;
             messages.erase(messages.begin()); 
         }
         m_messages.unlock();

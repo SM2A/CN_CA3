@@ -48,7 +48,6 @@ Client::Client()
 void Client::start()
 {
     ifstream file("./Source/Client/test.txt");
-    ofstream file2("file.dt");
     
     if (!file)
         throw runtime_error("file error");
@@ -124,11 +123,8 @@ void Client::start()
 
 void Client::sendWindow(bool is_first_call)
 {
-    // cerr<<"WINDOW: "<<window.size()<<endl;
     for (auto &el : window)
     {
-        // cerr<<"MSG: "<<el->getMsg()<<endl<<"ID: "<<el->getPacketId()<<endl<<"SIZE: "<<el->getWSize()<<endl;
-        cerr<<"MSG: "<<el->getMsg()<<" ID: "<<el->getPacketId()<<endl;
         send(socket_fd, el->getPacket(), PACKET_SIZE, 0);
     }
 
@@ -136,8 +132,6 @@ void Client::sendWindow(bool is_first_call)
     auto r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
     if (r < 0 || Message(buff).getPacketId() != cwnd)
     {
-        cerr<<"FFFFFFFFFFFFFFFF"<<endl;
-        cerr<<"R: "<<r<<" cwnd: "<<cwnd<<" id: "<<Message(buff).getPacketId()<<endl;
         if (is_first_call)
         {
             ssthresh = cwnd / 2;

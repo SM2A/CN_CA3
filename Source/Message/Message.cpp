@@ -19,15 +19,6 @@ Message::Message(unsigned char packet[PACKET_SIZE])
     // this->is_redundant = (bool)packet[18];
 
     this->w_size = (uint32_t)((packet[5] << (8 * 3)) + (packet[6] << (8 * 2)) + (packet[7] << 8) + packet[8]);
-
-    if (w_size == 0)
-    {
-        cerr<<"FFFF\n";
-        for (int i = 0; i < PACKET_SIZE; i++)
-        {
-            cerr<<"PACKET"<<i<<": "<<(int)packet[i]<<endl;
-        }
-    }
     
     memcpy(this->packet, packet, PACKET_SIZE);
 

@@ -56,10 +56,8 @@ void Server::start()
         {
             unsigned char buff[PACKET_SIZE] = { 0 };
             r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
-            std::cerr<<"RRRR: "<<r<<endl;
             if (r <= 0)
             {
-                cerr<<"TTT: "<<total_r<<endl;
                 is_end = true;
                 break;
             }
@@ -84,7 +82,6 @@ void Server::start()
                 }
                 window[msg->getPacketId()] = msg;
                 sum_of_packets += msg->getPacketId();
-                std::cerr<<"ID: "<<msg->getPacketId()<<endl;
 
                 break;
             }
@@ -109,7 +106,6 @@ void Server::start()
                 }
                 window[msg->getPacketId()] = msg;
                 sum_of_packets += msg->getPacketId();
-                std::cerr<<"IIIIIDD: "<<msg->getPacketId()<<endl;
                 
                 memset(prev_buff, 0, PACKET_SIZE);
                 for (auto i = PACKET_SIZE - total_r; i < PACKET_SIZE; i++)
@@ -128,22 +124,6 @@ void Server::start()
             }
         }
         saveWindow(sum_of_packets, window_size, file, is_end);
-
-
-
-
-
-
-
-
-
-
-        
-        
-        
-        
-
-    
         
         if (is_end)
         {
@@ -151,13 +131,11 @@ void Server::start()
             break;
         }
     }
-    std::cerr<<"QQQQQQQQQQQQ33"<<endl;
     file.close();
 }
 
 void Server::saveWindow(uint64_t &sum_of_packets, uint32_t window_size, ofstream &file, bool is_end)
 {
-    std::cerr<<" SUM: "<<sum_of_packets<<" SIZE: "<<window_size<<endl;
     if ((sum_of_packets == window_size * (window_size - 1) / 2 || (is_end && sum_of_packets != 0)) && window_size != last_sent_size)
         {
             this->last_sent_size = window_size;
@@ -165,23 +143,8 @@ void Server::saveWindow(uint64_t &sum_of_packets, uint32_t window_size, ofstream
             for (auto &el : window)
             {
                 if (el == 0) break;
-                std::cerr<<"ID: "<<el->getPacketId()<<" SIZE: "<<el->getWSize()<<" remain: "<<window.size() - 1<<" MSG: "<<el->getMsg()<<endl;
                 file<<el->getMsg();
             }
-            // Message ack(
-            //     inet_addr("127.0.0.1"), 
-            //     inet_addr("127.0.0.1"), 
-            //     msg->getWSize(), 
-            //     SERVER_PORT, 
-            //     msg->getSourcePort(), 
-            //     1,
-            //     true,
-            //     false,
-            //     false,
-            //     ""
-            //     );
-
-            
             
             Message ack(
                 window_size,
