@@ -17,7 +17,7 @@ class Client
         uint32_t max_cwnd = 1;
         uint32_t packet_id = 0;
         vector<Message*> window;
-        void sendWindow(ofstream &file, bool is_first_call = true);
+        void sendWindow(bool is_first_call = true);
 
     public:
         Client();

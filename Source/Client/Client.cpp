@@ -88,7 +88,7 @@ void Client::start()
         if (this->window.size() == this->cwnd)
         {
             this->packet_id = 0;
-            sendWindow(file2);
+            sendWindow();
         }
     }
     while (this->window.size() > 0 && this->window.size() != this->cwnd)
@@ -115,40 +115,38 @@ void Client::start()
     }
     if (this->window.size() > 0)
     {
-        sendWindow(file2);
+        sendWindow();
     }
     close(this->socket_fd);
     file.close();
-    file2.close();
     cout<<"MAX: "<<max_cwnd<<endl;
 }
 
-void Client::sendWindow(ofstream &file, bool is_first_call)
+void Client::sendWindow(bool is_first_call)
 {
     // cerr<<"WINDOW: "<<window.size()<<endl;
     for (auto &el : window)
     {
         // cerr<<"MSG: "<<el->getMsg()<<endl<<"ID: "<<el->getPacketId()<<endl<<"SIZE: "<<el->getWSize()<<endl;
         cerr<<"MSG: "<<el->getMsg()<<" ID: "<<el->getPacketId()<<endl;
-        file<<el->getMsg();
         send(socket_fd, el->getPacket(), PACKET_SIZE, 0);
     }
 
     unsigned char buff[PACKET_SIZE] = { 0 };
-    // auto r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
-    // if (r < 0 || Message(buff).getPacketId() != cwnd)
-    // {
-    //     cerr<<"FFFFFFFFFFFFFFFF"<<endl;
-    //     cerr<<"R: "<<r<<" cwnd: "<<cwnd<<" id: "<<Message(buff).getPacketId()<<endl;
-    //     if (is_first_call)
-    //     {
-    //         ssthresh = cwnd / 2;
-    //         cwnd = 1;
-    //     }
-    //     // this->sendWindow(false);
-    // }
-    // else 
-    // {
+    auto r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
+    if (r < 0 || Message(buff).getPacketId() != cwnd)
+    {
+        cerr<<"FFFFFFFFFFFFFFFF"<<endl;
+        cerr<<"R: "<<r<<" cwnd: "<<cwnd<<" id: "<<Message(buff).getPacketId()<<endl;
+        if (is_first_call)
+        {
+            ssthresh = cwnd / 2;
+            cwnd = 1;
+        }
+        this->sendWindow(false);
+    }
+    else 
+    {
         if (is_first_call)
         {
             if (cwnd < ssthresh)
@@ -166,5 +164,5 @@ void Client::sendWindow(ofstream &file, bool is_first_call)
             delete el;
         }
         window.clear();
-    // }
+    }
 }

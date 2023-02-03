@@ -7,6 +7,7 @@
 #include <unistd.h> 
 #include <string.h>
 #include <fstream>
+#include <unistd.h>
 #include "Server.h"
 
 using namespace std;
@@ -32,6 +33,11 @@ Server::Server()
     {
         throw runtime_error("cennect error");
     }
+
+    struct timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
+    setsockopt(this->socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 }
 
 void Server::start()
@@ -51,7 +57,7 @@ void Server::start()
             unsigned char buff[PACKET_SIZE] = { 0 };
             r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
             std::cerr<<"RRRR: "<<r<<endl;
-            if (r == 0)
+            if (r <= 0)
             {
                 cerr<<"TTT: "<<total_r<<endl;
                 is_end = true;
@@ -176,14 +182,14 @@ void Server::saveWindow(uint64_t &sum_of_packets, uint32_t window_size, ofstream
             //     );
 
             
-            // if (strlen((char*)window[window.size() - 1]->getMsg()) == 0) break;
-            // Message ack(
-            //     msg->getWSize(),
-            //     1,
-            //     true,
-            //     ""
-            //     );
-            // send(this->socket_fd, ack.getPacket(), PACKET_SIZE, 0);
+            
+            Message ack(
+                window_size,
+                1,
+                true,
+                ""
+                );
+            send(this->socket_fd, ack.getPacket(), PACKET_SIZE, 0);
         }
 }
 
