@@ -18,6 +18,8 @@ names = []
 for i in range(0, count):
     names.append(lines[i].split(' '))
 
+names = dict(zip(range(count), names))
+
 del lines[0:count]
 
 i = 0
@@ -33,8 +35,8 @@ for i in range(len(graph)):
 
 fig = plt.figure(figsize=(10, 10))
 pos = networkx.random_layout(G)
-networkx.draw(G, pos=pos, with_labels=False,node_color=types)
-# networkx.draw_networkx_labels(G, pos, names)
+networkx.draw(G, pos=pos, with_labels=False,node_color=types, node_size=2000)
+networkx.draw_networkx_labels(G, pos, labels=names, font_color="red")
 labels = networkx.get_edge_attributes(G, 'weight')
 networkx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 fig.set_facecolor('#8cc4ff')
