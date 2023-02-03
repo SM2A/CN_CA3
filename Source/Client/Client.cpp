@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
+#include <unistd.h>
 #include "Client.h"
 #include "../Message/Message.h"
 
@@ -46,7 +47,8 @@ Client::Client()
 
 void Client::start()
 {
-    ifstream file("./Source/Client/out-1MB.dt", fstream::binary | fstream::out);
+    ifstream file("./Source/Client/test.txt");
+    ofstream file2("file.dt");
     
     if (!file)
         throw runtime_error("file error");
@@ -58,75 +60,95 @@ void Client::start()
         for (int i = 0; i < MSG_SIZE; i++)
         {
             file >> noskipws >> ch;
-            if (file.eof()) break;
+            if (file.eof())
+                break;
             file_sector[i] = ch;
         }
-        Message *msg = new Message(
-            inet_addr("127.0.0.1"), 
-            inet_addr("127.0.0.1"), 
+        // Message *msg = new Message(
+        //     inet_addr("127.0.0.1"), 
+        //     inet_addr("127.0.0.1"), 
+        //     this->packet_id++, 
+        //     0, 
+        //     SERVER_PORT, 
+        //     this->cwnd,
+        //     false, 
+        //     file_sector[MSG_SIZE - 1] == 0,
+        //     false,
+        //     file_sector
+        //     );
+
+            Message *msg = new Message(
             this->packet_id++, 
-            0, 
-            SERVER_PORT, 
             this->cwnd,
             false, 
-            file_sector[MSG_SIZE - 1] == 0,
-            false,
             file_sector
             );
+
         this->window.push_back(msg);
         if (this->window.size() == this->cwnd)
         {
             this->packet_id = 0;
-            sendWindow();
+            sendWindow(file2);
         }
     }
     while (this->window.size() > 0 && this->window.size() != this->cwnd)
     {
+        // Message *msg = new Message(
+        //     inet_addr("127.0.0.1"), 
+        //     inet_addr("127.0.0.1"), 
+        //     this->packet_id++, 
+        //     0, 
+        //     SERVER_PORT, 
+        //     this->cwnd,
+        //     false,
+        //     true,
+        //     true,
+        //     ""
+        //     );
         Message *msg = new Message(
-            inet_addr("127.0.0.1"), 
-            inet_addr("127.0.0.1"), 
             this->packet_id++, 
-            0, 
-            SERVER_PORT, 
             this->cwnd,
             false,
-            true,
-            true,
             ""
             );
         this->window.push_back(msg);
     }
     if (this->window.size() > 0)
     {
-        sendWindow();
+        sendWindow(file2);
     }
+    close(this->socket_fd);
     file.close();
+    file2.close();
     cout<<"MAX: "<<max_cwnd<<endl;
 }
 
-void Client::sendWindow(bool is_first_call)
+void Client::sendWindow(ofstream &file, bool is_first_call)
 {
+    // cerr<<"WINDOW: "<<window.size()<<endl;
     for (auto &el : window)
     {
+        // cerr<<"MSG: "<<el->getMsg()<<endl<<"ID: "<<el->getPacketId()<<endl<<"SIZE: "<<el->getWSize()<<endl;
+        cerr<<"MSG: "<<el->getMsg()<<" ID: "<<el->getPacketId()<<endl;
+        file<<el->getMsg();
         send(socket_fd, el->getPacket(), PACKET_SIZE, 0);
     }
 
-    cerr<<"sending... "<<socket_fd<<endl;
-
     unsigned char buff[PACKET_SIZE] = { 0 };
-    auto r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
-    if (r < 0 || Message(buff).getPacketId() != cwnd)
-    {
-        if (is_first_call)
-        {
-            ssthresh = cwnd / 2;
-            cwnd = 1;
-        }
-        this->sendWindow(false);
-    }
-    else 
-    {
-        cerr<<"ID: "<<Message(buff).getPacketId()<<" isack: "<<Message(buff).isAck()<<endl;
+    // auto r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
+    // if (r < 0 || Message(buff).getPacketId() != cwnd)
+    // {
+    //     cerr<<"FFFFFFFFFFFFFFFF"<<endl;
+    //     cerr<<"R: "<<r<<" cwnd: "<<cwnd<<" id: "<<Message(buff).getPacketId()<<endl;
+    //     if (is_first_call)
+    //     {
+    //         ssthresh = cwnd / 2;
+    //         cwnd = 1;
+    //     }
+    //     // this->sendWindow(false);
+    // }
+    // else 
+    // {
         if (is_first_call)
         {
             if (cwnd < ssthresh)
@@ -144,5 +166,5 @@ void Client::sendWindow(bool is_first_call)
             delete el;
         }
         window.clear();
-    }
+    // }
 }
