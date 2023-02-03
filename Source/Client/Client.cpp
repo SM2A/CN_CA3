@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
+#include <unistd.h>
 #include "Client.h"
 #include "../Message/Message.h"
 
@@ -46,7 +47,7 @@ Client::Client()
 
 void Client::start()
 {
-    ifstream file("./Source/Client/out-1MB.dt", fstream::binary | fstream::out);
+    ifstream file("./Source/Client/test.txt");
     
     if (!file)
         throw runtime_error("file error");
@@ -58,21 +59,30 @@ void Client::start()
         for (int i = 0; i < MSG_SIZE; i++)
         {
             file >> noskipws >> ch;
-            if (file.eof()) break;
+            if (file.eof())
+                break;
             file_sector[i] = ch;
         }
-        Message *msg = new Message(
-            inet_addr("127.0.0.1"), 
-            inet_addr("127.0.0.1"), 
+        // Message *msg = new Message(
+        //     inet_addr("127.0.0.1"), 
+        //     inet_addr("127.0.0.1"), 
+        //     this->packet_id++, 
+        //     0, 
+        //     SERVER_PORT, 
+        //     this->cwnd,
+        //     false, 
+        //     file_sector[MSG_SIZE - 1] == 0,
+        //     false,
+        //     file_sector
+        //     );
+
+            Message *msg = new Message(
             this->packet_id++, 
-            0, 
-            SERVER_PORT, 
             this->cwnd,
             false, 
-            file_sector[MSG_SIZE - 1] == 0,
-            false,
             file_sector
             );
+
         this->window.push_back(msg);
         if (this->window.size() == this->cwnd)
         {
@@ -82,16 +92,22 @@ void Client::start()
     }
     while (this->window.size() > 0 && this->window.size() != this->cwnd)
     {
+        // Message *msg = new Message(
+        //     inet_addr("127.0.0.1"), 
+        //     inet_addr("127.0.0.1"), 
+        //     this->packet_id++, 
+        //     0, 
+        //     SERVER_PORT, 
+        //     this->cwnd,
+        //     false,
+        //     true,
+        //     true,
+        //     ""
+        //     );
         Message *msg = new Message(
-            inet_addr("127.0.0.1"), 
-            inet_addr("127.0.0.1"), 
             this->packet_id++, 
-            0, 
-            SERVER_PORT, 
             this->cwnd,
             false,
-            true,
-            true,
             ""
             );
         this->window.push_back(msg);
@@ -100,6 +116,7 @@ void Client::start()
     {
         sendWindow();
     }
+    close(this->socket_fd);
     file.close();
     cout<<"MAX: "<<max_cwnd<<endl;
 }
@@ -110,8 +127,6 @@ void Client::sendWindow(bool is_first_call)
     {
         send(socket_fd, el->getPacket(), PACKET_SIZE, 0);
     }
-
-    cerr<<"sending... "<<socket_fd<<endl;
 
     unsigned char buff[PACKET_SIZE] = { 0 };
     auto r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
@@ -126,7 +141,6 @@ void Client::sendWindow(bool is_first_call)
     }
     else 
     {
-        cerr<<"ID: "<<Message(buff).getPacketId()<<" isack: "<<Message(buff).isAck()<<endl;
         if (is_first_call)
         {
             if (cwnd < ssthresh)
