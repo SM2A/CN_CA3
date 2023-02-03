@@ -4,6 +4,8 @@
 #include <vector>
 #include "Node.h"
 
+enum LinkStatus { UP, DOWN };
+
 class Network {
 
 private:
@@ -13,7 +15,7 @@ private:
     int lastNodeNum = 0;
 
     std::vector<Node *> nodes;
-    std::vector<std::vector<int>> links;
+    std::vector<std::vector<std::pair<int, LinkStatus>>> links;
     std::vector<std::pair<std::pair<int,int>,int>> edges;
     std::vector<std::vector<int>> algorithmsLinks;
 
@@ -23,8 +25,7 @@ private:
 
     Node* findNode(int num);
     Node* findNode(std::string ip);
-    void recvPrintPath(std::vector<int> prev, int visited);
-    void recvPrintPath(std::vector<int> const &parent, int vertex, int source);
+    std::vector<int> recvPrintPath(std::vector<int> const &parent, int vertex, int source, std::vector<int>);
     void bellmanFord(int src);
 
 public:
@@ -39,7 +40,7 @@ public:
     void removeLink(std::string source, std::string destination);
 
     void dvrp();
-    void dvrp(int src);
+    void dvrp(std::string src);
 
 };
 

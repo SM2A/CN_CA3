@@ -13,7 +13,7 @@
 #define RUN "run"
 #define DRAW "draw"
 #define REMOVE "remove"
-#define SHOW_TABLE "draw table"
+#define SHOW_TABLE "show"
 
 class CommandParser {
 

@@ -19,6 +19,7 @@ public:
     std::vector<int> distance;
     std::vector<int> prev;
     std::vector<int> path;
+    std::vector<std::pair<int, int>> routingTable;
 
     Node(int num, Type type, std::string ip) : num(num), type(type), ip(ip) {}
 

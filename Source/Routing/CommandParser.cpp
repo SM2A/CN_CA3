@@ -95,12 +95,12 @@ void CommandParser::parseLog(const string &data) {
 }
 
 void CommandParser::parseShow(const string &data) {
-    string value, temp;
+    string ip, temp1, temp2;
     stringstream stream(data);
-    getline(stream, temp, SEPARATOR);
+    getline(stream, temp1, SEPARATOR);
+    getline(stream, temp2, SEPARATOR);
 
-    string node;
-    getline(stream, node);
+    getline(stream, ip);
 
-    network->dvrp(stoi(node));
+    network->dvrp(ip);
 }

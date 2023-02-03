@@ -37,9 +37,9 @@ void Network::draw() {
 
     for (int i = 0; i < links.size(); ++i) {
         cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << i + 1 << '|';
-        for (int j : links[i]) {
-            cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << j;
-            file << j << " ";
+        for (auto j : links[i]) {
+            cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << j.first;
+            file << j.first << " ";
         }
         file << endl;
         cout << endl;
@@ -70,17 +70,22 @@ void Network::addLink(string source, string destination, int cost) {
     int dstNum = dstNode->num;
 
     for (int i = 0; links.size() <= max(srcNum, dstNum); ++i) {
-        vector<int> row;
-        for (int j = 0; row.size() <= max(srcNum, dstNum); ++j) row.push_back(NO_LINK);
+        vector<pair<int, LinkStatus>> row;
+        for (int j = 0; row.size() <= max(srcNum, dstNum); ++j) row.push_back(make_pair(NO_LINK, DOWN));
         links.push_back(row);
     }
 
-    for (auto &link : links) for (int j = 0; link.size() <= max(srcNum, dstNum); ++j) link.push_back(NO_LINK);
+    for (auto &link : links) for (int j = 0; link.size() <= max(srcNum, dstNum); ++j) link.push_back(make_pair(NO_LINK, DOWN));
 
-    for (int i = 0; i < links.size(); ++i) links[i][i] = SAME_NODE;
+    for (int i = 0; i < links.size(); ++i) {
+        links[i][i].first = SAME_NODE;
+        links[i][i].second = UP;
+    }
 
-    links[srcNum][dstNum] = cost;
-    links[dstNum][srcNum] = cost;
+    links[srcNum][dstNum].first = cost;
+    links[srcNum][dstNum].second = UP;
+    links[dstNum][srcNum].first = cost;
+    links[dstNum][srcNum].second = UP;
     edges.emplace_back(pair<int, int>(srcNum, dstNum), cost);
     edges.emplace_back(pair<int, int>(dstNum, srcNum), cost);
 
@@ -104,8 +109,10 @@ void Network::modifyLink(string source, string destination, int cost) {
     int srcNum = srcNode->num;
     int dstNum = dstNode->num;
 
-    links[srcNum][dstNum] = cost;
-    links[dstNum][srcNum] = cost;
+    links[srcNum][dstNum].first = cost;
+    links[srcNum][dstNum].second = UP;
+    links[dstNum][srcNum].first = cost;
+    links[dstNum][srcNum].second = UP;
 
     bool sd = false, ds = false;
 
@@ -139,8 +146,10 @@ void Network::removeLink(string source, string destination) {
     int srcNum = srcNode->num;
     int dstNum = dstNode->num;
 
-    links[srcNum][dstNum] = NO_LINK;
-    links[dstNum][srcNum] = NO_LINK;
+    links[srcNum][dstNum].first = NO_LINK;
+    links[srcNum][dstNum].second = DOWN;
+    links[dstNum][srcNum].first = NO_LINK;
+    links[dstNum][srcNum].second = DOWN;
 
     for (int i = 0; i < edges.size(); ++i) {
         if ((edges[i].first.first == srcNum) && (edges[i].first.second == dstNum)) {
@@ -155,14 +164,25 @@ void Network::removeLink(string source, string destination) {
 }
 
 void Network::dvrp() {
-    for (int i = 0; i < links.size(); ++i) {
-        cout << "Node " << i + 1 << ":" << endl;
-        bellmanFord(i);
-    }
+    for (int i = 0; i < links.size(); ++i) bellmanFord(i);
 }
 
-void Network::dvrp(int src) {
-    bellmanFord(src - 1);
+void Network::dvrp(string src) {
+    Node* node = findNode(src);
+
+    if (node == nullptr) {
+        cerr << "Node not found" << endl;
+        return;
+    }
+
+    cout << "Destination                             Next Hop" << endl;
+    cout << "---------------------------------------------------" << endl;
+    for (auto entry: node->routingTable) {
+        Node* dstNode = findNode(entry.first);
+        Node* nextHop = findNode(entry.second);
+        cout << dstNode->ip << "                            "
+             << nextHop->ip << endl;
+    }
 }
 
 Node *Network::findNode(int num) {
@@ -177,17 +197,10 @@ Node *Network::findNode(string ip) {
     else return nullptr;
 }
 
-void Network::recvPrintPath(vector<int> prev, int visited) {
-    if (prev[visited] == -1) return;
-    recvPrintPath(prev, prev[visited]);
-    cout << "->" << visited + 1;
-}
-
-void Network::recvPrintPath(vector<int> const &parent, int vertex, int source) {
-    if (vertex < 0) return;
-    recvPrintPath(parent, parent[vertex], source);
-    if (vertex != source) cout << " -> ";
-    cout << vertex + 1;
+vector<int> Network::recvPrintPath(vector<int> const &parent, int vertex, int source, vector<int> path = {}) {
+    if (vertex == source)  return path;
+    path.push_back(vertex);
+    return recvPrintPath(parent, parent[vertex], source, path);
 }
 
 void Network::bellmanFord(int src) {
@@ -213,21 +226,16 @@ void Network::bellmanFord(int src) {
 
     /*auto end = chrono::high_resolution_clock::now();*/
 
-    cout << "Dest    Next Hop    Dist    Shortest Path" << endl;
-    cout << "-----------------------------------------" << endl;
     for (int k = 0; k < links.size(); k++) {
-        cout << k + 1
-             << "         " << k + 1
-             << "          " << node->distance[k]
-             << "        [";
-        recvPrintPath(node->path, k, src);
-        cout << "]" << endl;
+        if (src != k) {
+            vector<int> path = recvPrintPath(node->path, k, src, vector<int>());
+            if (path.size() == 1) node->routingTable.push_back(make_pair(k, path[0]));
+            else if (path.size() > 1) node->routingTable.push_back(make_pair(k, path[1]));
+        }
     }
 
     /*auto duration = chrono::duration_cast<chrono::nanoseconds>(end - begin);
     cout << duration.count() << " nanosecond" << endl;*/
-
-    cout << endl;
 
     node->clear();
 }
