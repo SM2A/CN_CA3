@@ -126,19 +126,28 @@ void Network::modifyLink(string source, string destination, int cost) {
     }
 }
 
-void Network::removeLink(int source, int destination) {
-    source -= 1;
-    destination -= 1;
+void Network::removeLink(string source, string destination) {
 
-    links[source][destination] = NO_LINK;
-    links[destination][source] = NO_LINK;
+    Node* srcNode = findNode(source);
+    Node* dstNode = findNode(destination);
+
+    if ((srcNode == nullptr) || (dstNode == nullptr)) {
+        cerr << "Node not found" << endl;
+        return;
+    }
+
+    int srcNum = srcNode->num;
+    int dstNum = dstNode->num;
+
+    links[srcNum][dstNum] = NO_LINK;
+    links[dstNum][srcNum] = NO_LINK;
 
     for (int i = 0; i < edges.size(); ++i) {
-        if ((edges[i].first.first == source) && (edges[i].first.second == destination)) {
+        if ((edges[i].first.first == srcNum) && (edges[i].first.second == dstNum)) {
             edges.erase(edges.begin() + i);
             i--;
         }
-        if ((edges[i].first.second == source) && (edges[i].first.first == destination)) {
+        if ((edges[i].first.second == srcNum) && (edges[i].first.first == dstNum)) {
             edges.erase(edges.begin() + i);
             i--;
         }

@@ -27,17 +27,18 @@ void CommandParser::parse(const string &command) {
 }
 
 void CommandParser::parseRemove(const string &data) {
-    string value, temp;
+    string temp, branch;
     stringstream stream(data);
     getline(stream, temp, SEPARATOR);
-    getline(stream, temp, SEPARATOR);
+    getline(stream, branch, SEPARATOR);
 
-    string source, destination;
+    string source, destination, cost;
 
     getline(stream, source, SEPARATOR);
     getline(stream, destination, SEPARATOR);
+    getline(stream, cost, SEPARATOR);
 
-    network->removeLink(stoi(source), stoi(destination));
+    network->removeLink(source, destination);
 }
 
 void CommandParser::parseAdd(const string &data) {

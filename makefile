@@ -25,3 +25,7 @@ routing.out: $(SRC_FILES_RP)
 
 clean:
 	rm -f *.out
+
+graphClean:
+	rm -f graph.txt
+	rm -f *.png

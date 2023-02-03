@@ -36,7 +36,7 @@ public:
     void addNode(std::string type, std::string ip);
     void addLink(std::string source, std::string destination, int cost);
     void modifyLink(std::string source, std::string destination, int cost);
-    void removeLink(int source, int destination);
+    void removeLink(std::string source, std::string destination);
 
     void dvrp();
     void dvrp(int src);
