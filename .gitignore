@@ -1,7 +1,8 @@
-.vscode
-.idea
+/.vscode
+/.idea
 *.out
-cmake-build-debug-wsl
+/cmake-build-*
 *.dt
 *.txt
 *.hex
+*.png
