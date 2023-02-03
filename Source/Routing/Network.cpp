@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <fstream>
 #include <iostream>
 #include "Network.h"
 #include <algorithm>
@@ -22,6 +23,8 @@ Network *Network::getInstance() {
 
 void Network::show() {
 
+    ofstream file("graph.txt");
+
     cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << "      ";
 
     for (int i = 0; i < links.size(); ++i) cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << i + 1;
@@ -32,11 +35,18 @@ void Network::show() {
 
     for (int i = 0; i < links.size(); ++i) {
         cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << i + 1 << '|';
-        for (int j : links[i]) cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << j;
+        for (int j : links[i]) {
+            cout << left << setw(NUM_WIDTH) << setfill(SEPARATOR) << j;
+            file << j << " ";
+        }
+        file << endl;
         cout << endl;
     }
 
+    file.close();
     cout << endl;
+
+    system("python3 Source/Routing/graph.py");
 }
 
 void Network::addLink(int source, int destination, int cost) {

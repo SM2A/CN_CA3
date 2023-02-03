@@ -45,7 +45,6 @@ add_executable(routing
         ${ROUTING_DIR}/Network.h
         ${ROUTING_DIR}/CommandParser.cpp
         ${ROUTING_DIR}/CommandParser
-        ${ROUTING_DIR}/Weighted.cpp
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
