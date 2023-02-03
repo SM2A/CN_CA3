@@ -10,6 +10,8 @@ private:
 
     static Network *instance;
 
+    int lastNodeNum = 0;
+
     std::vector<Node *> nodes;
     std::vector<std::vector<int>> links;
     std::vector<std::pair<std::pair<int,int>,int>> edges;
@@ -20,6 +22,7 @@ private:
     }
 
     Node* findNode(int num);
+    Node* findNode(std::string ip);
     void recvPrintPath(std::vector<int> prev, int visited);
     void recvPrintPath(std::vector<int> const &parent, int vertex, int source);
     void bellmanFord(int src);
@@ -30,8 +33,9 @@ public:
 
     void draw();
 
-    void addLink(int source, int destination, int cost);
-    void modifyLink(int source, int destination, int cost);
+    void addNode(std::string type, std::string ip);
+    void addLink(std::string source, std::string destination, int cost);
+    void modifyLink(std::string source, std::string destination, int cost);
     void removeLink(int source, int destination);
 
     void dvrp();

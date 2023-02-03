@@ -41,34 +41,44 @@ void CommandParser::parseRemove(const string &data) {
 }
 
 void CommandParser::parseAdd(const string &data) {
-    string value, temp;
+    string temp, branch;
     stringstream stream(data);
     getline(stream, temp, SEPARATOR);
+    getline(stream, branch, SEPARATOR);
 
-    while (getline(stream, value, SEPARATOR)) {
-        stringstream entry(value);
-        string source, destination, cost;
+    if ((branch == HOSTS) || (branch == ROUTERS)) {
+        string ip;
+        while (getline(stream, ip, SEPARATOR)) network->addNode(branch, ip);
+    } else if (branch == LINK) {
+        string value;
+        while (getline(stream, value)) {
+            stringstream entry(value);
+            string source, destination, cost;
 
-        getline(entry, source, DELIMITER);
-        getline(entry, destination, DELIMITER);
-        getline(entry, cost, DELIMITER);
+            getline(entry, source, SEPARATOR);
+            getline(entry, destination, SEPARATOR);
+            getline(entry, cost, SEPARATOR);
 
-        network->addLink(stoi(source), stoi(destination), stoi(cost));
+            network->addLink(source, destination, stoi(cost));
+        }
     }
 }
 
 void CommandParser::parseUpdate(const string &data) {
-    string value, temp;
+    string temp, branch;
     stringstream stream(data);
     getline(stream, temp, SEPARATOR);
+    getline(stream, branch, SEPARATOR);
 
-    string source, destination, cost;
+    if (branch == LINK) {
+        string source, destination, cost;
 
-    getline(stream, source, DELIMITER);
-    getline(stream, destination, DELIMITER);
-    getline(stream, cost, DELIMITER);
+        getline(stream, source, SEPARATOR);
+        getline(stream, destination, SEPARATOR);
+        getline(stream, cost, SEPARATOR);
 
-    network->modifyLink(stoi(source), stoi(destination), stoi(cost));
+        network->modifyLink(source, destination, stoi(cost));
+    }
 }
 
 void CommandParser::parseDraw() {

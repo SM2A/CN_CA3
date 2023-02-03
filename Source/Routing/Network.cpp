@@ -10,6 +10,8 @@
 #define SAME_NODE 0
 #define NUM_WIDTH 5
 #define SEPARATOR ' '
+#define HOSTS "hosts"
+#define ROUTERS "routers"
 #define SAME_NODE_ERROR "Source and Destination cannot be the same"
 
 using namespace std;
@@ -49,64 +51,78 @@ void Network::draw() {
     system("python3 Source/Routing/graph.py");
 }
 
-void Network::addLink(int source, int destination, int cost) {
+void Network::addLink(string source, string destination, int cost) {
 
     if (source == destination) {
         cerr << SAME_NODE_ERROR << endl;
         return;
     }
 
-    for (int i = 0; links.size() < max(source, destination); ++i) {
+    Node* srcNode = findNode(source);
+    Node* dstNode = findNode(destination);
+
+    if ((srcNode == nullptr) || (dstNode == nullptr)) {
+        cerr << "Node not found" << endl;
+        return;
+    }
+
+    int srcNum = srcNode->num;
+    int dstNum = dstNode->num;
+
+    for (int i = 0; links.size() <= max(srcNum, dstNum); ++i) {
         vector<int> row;
-        for (int j = 0; row.size() < max(source, destination); ++j) row.push_back(NO_LINK);
+        for (int j = 0; row.size() <= max(srcNum, dstNum); ++j) row.push_back(NO_LINK);
         links.push_back(row);
     }
 
-    for (auto &link : links) for (int j = 0; link.size() < max(source, destination); ++j) link.push_back(NO_LINK);
+    for (auto &link : links) for (int j = 0; link.size() <= max(srcNum, dstNum); ++j) link.push_back(NO_LINK);
 
     for (int i = 0; i < links.size(); ++i) links[i][i] = SAME_NODE;
 
-    source -= 1;
-    destination -= 1;
+    links[srcNum][dstNum] = cost;
+    links[dstNum][srcNum] = cost;
+    edges.emplace_back(pair<int, int>(srcNum, dstNum), cost);
+    edges.emplace_back(pair<int, int>(dstNum, srcNum), cost);
 
-    links[source][destination] = cost;
-    links[destination][source] = cost;
-    edges.emplace_back(pair<int, int>(source, destination), cost);
-    edges.emplace_back(pair<int, int>(destination, source), cost);
-
-    if (findNode(source) == nullptr) nodes.push_back(new Node(source));
-    if (findNode(destination) == nullptr) nodes.push_back(new Node(destination));
 }
 
-void Network::modifyLink(int source, int destination, int cost) {
+void Network::modifyLink(string source, string destination, int cost) {
 
     if (source == destination) {
         cerr << SAME_NODE_ERROR << endl;
         return;
     }
 
-    source -= 1;
-    destination -= 1;
+    Node* srcNode = findNode(source);
+    Node* dstNode = findNode(destination);
 
-    links[source][destination] = cost;
-    links[destination][source] = cost;
+    if ((srcNode == nullptr) || (dstNode == nullptr)) {
+        cerr << "Node not found" << endl;
+        return;
+    }
+
+    int srcNum = srcNode->num;
+    int dstNum = dstNode->num;
+
+    links[srcNum][dstNum] = cost;
+    links[dstNum][srcNum] = cost;
 
     bool sd = false, ds = false;
 
     for (auto i : edges) {
-        if ((i.first.first == source) && (i.first.second == destination)) {
+        if ((i.first.first == srcNum) && (i.first.second == dstNum)) {
             i.second = cost;
             sd = true;
         }
-        if ((i.first.second == source) && (i.first.first == destination)) {
+        if ((i.first.second == srcNum) && (i.first.first == dstNum)) {
             i.second = cost;
             ds = true;
         }
     }
 
     if (!sd && !ds) {
-        edges.emplace_back(pair<int, int>(source, destination), cost);
-        edges.emplace_back(pair<int, int>(destination, source), cost);
+        edges.emplace_back(pair<int, int>(srcNum, dstNum), cost);
+        edges.emplace_back(pair<int, int>(dstNum, srcNum), cost);
     }
 }
 
@@ -142,6 +158,12 @@ void Network::dvrp(int src) {
 
 Node *Network::findNode(int num) {
     auto iter = find_if(nodes.begin(), nodes.end(), [num](Node *node) -> bool { return node->num == num; });
+    if (iter != nodes.end()) return iter[0];
+    else return nullptr;
+}
+
+Node *Network::findNode(string ip) {
+    auto iter = find_if(nodes.begin(), nodes.end(), [ip](Node *node) -> bool { return node->ip == ip; });
     if (iter != nodes.end()) return iter[0];
     else return nullptr;
 }
@@ -199,4 +221,16 @@ void Network::bellmanFord(int src) {
     cout << endl;
 
     node->clear();
+}
+
+void Network::addNode(string type, string ip) {
+    Type nodeType;
+    if (type == HOSTS) nodeType = HOST;
+    else if (type == ROUTERS) nodeType = ROUTER;
+    else {
+        cerr << "Node type error" << endl;
+        return;
+    }
+    nodes.push_back(new Node(lastNodeNum, nodeType, ip));
+    lastNodeNum++;
 }
