@@ -2,7 +2,6 @@
 #include "CommandParser.h"
 
 #define SEPARATOR ' '
-#define DELIMITER '-'
 
 using namespace std;
 
@@ -14,21 +13,34 @@ CommandParser *CommandParser::getInstance() {
 }
 
 void CommandParser::parse(const string &command) {
-
     string cmd;
     stringstream stream(command);
     getline(stream, cmd, SEPARATOR);
 
-    if (cmd == TOPOLOGY) parseTopology(stream.str());
-    else if (cmd == MODIFY) parseModify(stream.str());
+    if (cmd == ADD) parseAdd(stream.str());
+    else if (cmd == UPDATE) parseUpdate(stream.str());
     else if (cmd == REMOVE) parseRemove(stream.str());
-    else if (cmd == SHOW) parseShow();
-    else if (cmd == LSRP) parseLSRP(stream.str());
-    else if (cmd == DVRP) parseDVRP(stream.str());
+    else if (cmd == LOG_STATUS) parseLog(stream.str());
+    else if (cmd == RUN) parseRun();
+    else if (cmd == DRAW) parseDraw();
+    else if (cmd == SHOW_TABLE) parseShow(stream.str());
 }
 
-void CommandParser::parseTopology(const string &data) {
+void CommandParser::parseRemove(const string &data) {
+    string value, temp;
+    stringstream stream(data);
+    getline(stream, temp, SEPARATOR);
+    getline(stream, temp, SEPARATOR);
 
+    string source, destination;
+
+    getline(stream, source, SEPARATOR);
+    getline(stream, destination, SEPARATOR);
+
+    network->removeLink(stoi(source), stoi(destination));
+}
+
+void CommandParser::parseAdd(const string &data) {
     string value, temp;
     stringstream stream(data);
     getline(stream, temp, SEPARATOR);
@@ -45,8 +57,7 @@ void CommandParser::parseTopology(const string &data) {
     }
 }
 
-void CommandParser::parseModify(const string &data) {
-
+void CommandParser::parseUpdate(const string &data) {
     string value, temp;
     stringstream stream(data);
     getline(stream, temp, SEPARATOR);
@@ -60,26 +71,19 @@ void CommandParser::parseModify(const string &data) {
     network->modifyLink(stoi(source), stoi(destination), stoi(cost));
 }
 
-void CommandParser::parseRemove(const string &data) {
-
-    string value, temp;
-    stringstream stream(data);
-    getline(stream, temp, SEPARATOR);
-
-    string source, destination;
-
-    getline(stream, source, DELIMITER);
-    getline(stream, destination, DELIMITER);
-
-    network->removeLink(stoi(source), stoi(destination));
+void CommandParser::parseDraw() {
+    network->draw();
 }
 
-void CommandParser::parseShow() {
-    network->show();
+void CommandParser::parseRun() {
+    network->dvrp();
 }
 
-void CommandParser::parseLSRP(const string &data) {
+void CommandParser::parseLog(const string &data) {
 
+}
+
+void CommandParser::parseShow(const string &data) {
     string value, temp;
     stringstream stream(data);
     getline(stream, temp, SEPARATOR);
@@ -87,19 +91,5 @@ void CommandParser::parseLSRP(const string &data) {
     string node;
     getline(stream, node);
 
-    if (node.empty()) network->lsrp();
-    else network->lsrp(stoi(node));
-}
-
-void CommandParser::parseDVRP(const string &data) {
-
-    string value, temp;
-    stringstream stream(data);
-    getline(stream, temp, SEPARATOR);
-
-    string node;
-    getline(stream, node);
-
-    if (node.empty()) network->dvrp();
-    else network->dvrp(stoi(node));
+    network->dvrp(stoi(node));
 }

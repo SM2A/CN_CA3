@@ -20,26 +20,19 @@ private:
     }
 
     Node* findNode(int num);
-    void copyLinks();
-    void dijkstra(int src);
     void recvPrintPath(std::vector<int> prev, int visited);
     void recvPrintPath(std::vector<int> const &parent, int vertex, int source);
-    std::vector<int> copyDistance(const std::vector<int>& distance);
-    bool compareCost(std::vector<int> prev, std::vector<int> now);
     void bellmanFord(int src);
 
 public:
 
     static Network *getInstance();
 
-    void show();
+    void draw();
 
     void addLink(int source, int destination, int cost);
     void modifyLink(int source, int destination, int cost);
     void removeLink(int source, int destination);
-
-    void lsrp();
-    void lsrp(int src);
 
     void dvrp();
     void dvrp(int src);

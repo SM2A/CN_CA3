@@ -6,7 +6,7 @@
 //#include <chrono>
 
 #define INF 99999
-#define NO_LINK -1
+#define NO_LINK (-1)
 #define SAME_NODE 0
 #define NUM_WIDTH 5
 #define SEPARATOR ' '
@@ -21,7 +21,7 @@ Network *Network::getInstance() {
     return instance;
 }
 
-void Network::show() {
+void Network::draw() {
 
     ofstream file("graph.txt");
 
@@ -129,19 +129,6 @@ void Network::removeLink(int source, int destination) {
     }
 }
 
-void Network::lsrp() {
-    copyLinks();
-    for (int i = 0; i < links.size(); ++i) {
-        cout << "Node " << i + 1 << ":" << endl;
-        dijkstra(i);
-    }
-}
-
-void Network::lsrp(int src) {
-    copyLinks();
-    dijkstra(src - 1);
-}
-
 void Network::dvrp() {
     for (int i = 0; i < links.size(); ++i) {
         cout << "Node " << i + 1 << ":" << endl;
@@ -159,117 +146,10 @@ Node *Network::findNode(int num) {
     else return nullptr;
 }
 
-void Network::dijkstra(int src) {
-
-    Node *node = findNode(src);
-    node->init(links.size());
-    node->distance[src] = 0;
-
-    vector<int> visited(links.size(), 0);
-    /*vector<int> lastCost = copyDistance(node->distance);*/
-
-    /*auto begin = chrono::high_resolution_clock::now();*/
-
-    for (int j = 0; j < links.size() - 1; j++) {
-
-        int min = INF, u;
-
-        for (int i = 0; i < links.size(); i++) {
-            if (visited[i] == 0 && node->distance[i] <= min) {
-                min = node->distance[i];
-                u = i;
-            }
-        }
-
-        visited[u] = 1;
-
-        for (int v = 0; v < links.size(); v++) {
-            if (algorithmsLinks[u][v] > 0 && node->distance[u] != INF) {
-                int alt = node->distance[u] + algorithmsLinks[u][v];
-                if (alt < node->distance[v]) {
-                    node->distance[v] = alt;
-                    node->prev[v] = u;
-                }
-            }
-        }
-
-        cout << "Iter " << j + 1 << ":" << endl;
-
-        cout << left << setw(NUM_WIDTH * 2) << setfill(SEPARATOR) << "Dest";
-
-        for (int k = 0; k < links.size(); k++) cout << left << setw(NUM_WIDTH * 2) << setfill(SEPARATOR) << k + 1;
-        cout << endl;
-
-        for (int k = 0; k < (links.size() * (NUM_WIDTH * 2) + NUM_WIDTH); ++k) cout << '_';
-        cout << endl;
-
-        cout << left << setw(NUM_WIDTH * 2) << setfill(SEPARATOR) << "Cost";
-
-        for (int k = 0; k < links.size(); k++) {
-            if (node->distance[k] == INF) cout << left << setw(NUM_WIDTH * 2) << setfill(SEPARATOR) << NO_LINK;
-            else cout << left << setw(NUM_WIDTH * 2) << setfill(SEPARATOR) << node->distance[k];
-        }
-        cout << endl;
-
-        /*if (compareCost(lastCost, node->distance)) break;*/ // To end algorithm when two iterations are the same
-        /*lastCost = copyDistance(node->distance);*/ // To end algorithm when two iterations are the same
-
-        for (int k = 0; k < (links.size() * (NUM_WIDTH * 2) + NUM_WIDTH); ++k) cout << '_';
-        cout << endl << endl;
-    }
-
-    /*auto end = chrono::high_resolution_clock::now();*/
-
-    cout << "Path: [s]->[d]   Min-Cost   Shortest Path" << endl;
-    cout << "      ---------  ---------  --------------" << endl;
-    for (int k = 0; k < links.size(); k++) {
-        if (k == src) continue;
-
-        cout << "       " << "[" << src + 1 << "]"
-             << "->" << "[" << k + 1 << "]   "
-             << node->distance[k] << "        "
-             << src + 1;
-
-        recvPrintPath(node->prev, k);
-        cout << endl;
-    }
-
-    /*auto duration = chrono::duration_cast<chrono::nanoseconds>(end - begin);
-    cout << duration.count() << " nanosecond" << endl;*/
-
-    cout << endl;
-
-    node->clear();
-}
-
 void Network::recvPrintPath(vector<int> prev, int visited) {
     if (prev[visited] == -1) return;
     recvPrintPath(prev, prev[visited]);
     cout << "->" << visited + 1;
-}
-
-void Network::copyLinks() {
-
-    algorithmsLinks.clear();
-
-    for (int i = 0; i < links.size(); ++i) {
-        algorithmsLinks.emplace_back();
-        for (int j = 0; j < links[i].size(); ++j) {
-            algorithmsLinks[i].push_back(links[i][j]);
-            if (links[i][j] == -1) algorithmsLinks[i][j] = INF;
-        }
-    }
-}
-
-bool Network::compareCost(vector<int> prev, vector<int> now) {
-    for (int i = 0; i < min(prev.size(), now.size()); ++i) if (prev[i] != now[i]) return false;
-    return true;
-}
-
-vector<int> Network::copyDistance(const vector<int> &distance) {
-    vector<int> newDistance;
-    for (int i : distance) newDistance.push_back(i);
-    return newDistance;
 }
 
 void Network::recvPrintPath(vector<int> const &parent, int vertex, int source) {

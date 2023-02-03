@@ -1,7 +1,7 @@
 #include "Node.h"
 
 #define INF 99999
-#define NO_LINK -1
+#define NO_LINK (-1)
 
 using namespace std;
 
