@@ -66,20 +66,23 @@ void CommandParser::parseAdd(const string &data) {
 }
 
 void CommandParser::parseUpdate(const string &data) {
-    string temp, branch;
+    string temp, temp2;
     stringstream stream(data);
     getline(stream, temp, SEPARATOR);
-    getline(stream, branch, SEPARATOR);
+    getline(stream, temp2, SEPARATOR);
 
-    if (branch == LINK) {
-        string source, destination, cost;
+    string source, destination;
 
-        getline(stream, source, SEPARATOR);
-        getline(stream, destination, SEPARATOR);
-        getline(stream, cost, SEPARATOR);
+    getline(stream, source, SEPARATOR);
+    getline(stream, destination, SEPARATOR);
 
-        network->modifyLink(source, destination, stoi(cost));
-    }
+    string data1, data2;
+
+    getline(stream, data1, SEPARATOR);
+    getline(stream, data2);
+
+    if (data2.empty()) network->modifyLink(source, destination, stoi(data1));
+    else network->downLink(source, destination, stoi(data1), stoi(data2));
 }
 
 void CommandParser::parseDraw() {
@@ -87,7 +90,7 @@ void CommandParser::parseDraw() {
 }
 
 void CommandParser::parseRun() {
-    network->dvrp();
+    network->dvrp(true);
 }
 
 void CommandParser::parseLog(const string &data) {
