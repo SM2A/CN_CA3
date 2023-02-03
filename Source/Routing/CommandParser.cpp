@@ -91,7 +91,17 @@ void CommandParser::parseRun() {
 }
 
 void CommandParser::parseLog(const string &data) {
+    string temp1, temp2;
+    stringstream stream(data);
+    getline(stream, temp1, SEPARATOR);
+    getline(stream, temp2, SEPARATOR);
 
+    string source, destination;
+
+    getline(stream, source, SEPARATOR);
+    getline(stream, destination, SEPARATOR);
+
+    network->linkStatus(source, destination);
 }
 
 void CommandParser::parseShow(const string &data) {
@@ -102,5 +112,5 @@ void CommandParser::parseShow(const string &data) {
 
     getline(stream, ip);
 
-    network->dvrp(ip);
+    network->showTable(ip);
 }

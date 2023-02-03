@@ -49,4 +49,6 @@ add_executable(routing
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+
 target_link_libraries(router PRIVATE Threads::Threads)
+target_link_libraries(routing PRIVATE Threads::Threads)

@@ -9,7 +9,7 @@
 #define LINK "link"
 #define HOSTS "hosts"
 #define ROUTERS "routers"
-#define LOG_STATUS "log status"
+#define LOG_STATUS "log"
 #define RUN "run"
 #define DRAW "draw"
 #define REMOVE "remove"

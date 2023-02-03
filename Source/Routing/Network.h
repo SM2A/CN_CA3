@@ -16,7 +16,7 @@ private:
 
     std::vector<Node *> nodes;
     std::vector<std::vector<std::pair<int, LinkStatus>>> links;
-    std::vector<std::pair<std::pair<int,int>,int>> edges;
+    std::vector<std::pair<std::pair<std::pair<int,int>,int>, LinkStatus>> edges;
     std::vector<std::vector<int>> algorithmsLinks;
 
     Network() {
@@ -38,9 +38,10 @@ public:
     void addLink(std::string source, std::string destination, int cost);
     void modifyLink(std::string source, std::string destination, int cost);
     void removeLink(std::string source, std::string destination);
+    void linkStatus(std::string source, std::string destination);
+    void showTable(std::string src);
 
     void dvrp();
-    void dvrp(std::string src);
 
 };
 

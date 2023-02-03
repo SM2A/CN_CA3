@@ -86,8 +86,8 @@ void Network::addLink(string source, string destination, int cost) {
     links[srcNum][dstNum].second = UP;
     links[dstNum][srcNum].first = cost;
     links[dstNum][srcNum].second = UP;
-    edges.emplace_back(pair<int, int>(srcNum, dstNum), cost);
-    edges.emplace_back(pair<int, int>(dstNum, srcNum), cost);
+    edges.emplace_back(make_pair(make_pair(srcNum, dstNum), cost), UP);
+    edges.emplace_back(make_pair(make_pair(dstNum, srcNum), cost), UP);
 
 }
 
@@ -117,19 +117,19 @@ void Network::modifyLink(string source, string destination, int cost) {
     bool sd = false, ds = false;
 
     for (auto i : edges) {
-        if ((i.first.first == srcNum) && (i.first.second == dstNum)) {
-            i.second = cost;
+        if ((i.first.first.first == srcNum) && (i.first.first.second == dstNum)) {
+            i.first.second = cost;
             sd = true;
         }
-        if ((i.first.second == srcNum) && (i.first.first == dstNum)) {
-            i.second = cost;
+        if ((i.first.first.second == srcNum) && (i.first.first.first == dstNum)) {
+            i.first.second = cost;
             ds = true;
         }
     }
 
     if (!sd && !ds) {
-        edges.emplace_back(pair<int, int>(srcNum, dstNum), cost);
-        edges.emplace_back(pair<int, int>(dstNum, srcNum), cost);
+        edges.emplace_back(make_pair(make_pair(srcNum, dstNum), cost), UP);
+        edges.emplace_back(make_pair(make_pair(dstNum, srcNum), cost), UP);
     }
 }
 
@@ -152,11 +152,11 @@ void Network::removeLink(string source, string destination) {
     links[dstNum][srcNum].second = DOWN;
 
     for (int i = 0; i < edges.size(); ++i) {
-        if ((edges[i].first.first == srcNum) && (edges[i].first.second == dstNum)) {
+        if ((edges[i].first.first.first == srcNum) && (edges[i].first.second == dstNum)) {
             edges.erase(edges.begin() + i);
             i--;
         }
-        if ((edges[i].first.second == srcNum) && (edges[i].first.first == dstNum)) {
+        if ((edges[i].first.second == srcNum) && (edges[i].first.first.second == dstNum)) {
             edges.erase(edges.begin() + i);
             i--;
         }
@@ -167,7 +167,7 @@ void Network::dvrp() {
     for (int i = 0; i < links.size(); ++i) bellmanFord(i);
 }
 
-void Network::dvrp(string src) {
+void Network::showTable(string src) {
     Node* node = findNode(src);
 
     if (node == nullptr) {
@@ -214,8 +214,8 @@ void Network::bellmanFord(int src) {
 
     for (int i = 0; i < links.size(); i++) {
         for (auto &edge : edges) {
-            int u = edge.first.first;
-            int v = edge.first.second;
+            int u = edge.first.first.first;
+            int v = edge.first.first.second;
             int cost = edge.second;
             if (((node->distance[u] + cost) < node->distance[v]) && (node->distance[u] != INF)) {
                 node->path[v] = u;
@@ -250,4 +250,17 @@ void Network::addNode(string type, string ip) {
     }
     nodes.push_back(new Node(lastNodeNum, nodeType, ip));
     lastNodeNum++;
+}
+
+void Network::linkStatus(std::string source, std::string destination) {
+    Node* srcNode = findNode(source);
+    Node* dstNode = findNode(destination);
+
+    if ((srcNode == nullptr) || (dstNode == nullptr)) {
+        cerr << "Link not found" << endl;
+        return;
+    }
+
+    if (links[srcNode->num][dstNode->num].second == UP) cout << "UP" << endl;
+    else cout << "DOWN" << endl;
 }
