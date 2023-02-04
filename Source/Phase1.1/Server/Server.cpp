@@ -35,14 +35,14 @@ Server::Server()
     }
 
     struct timeval timeout;
-    timeout.tv_sec = 1;
+    timeout.tv_sec = 5;
     timeout.tv_usec = 0;
     setsockopt(this->socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 }
 
 void Server::start()
 {
-    ofstream file("new_file.dt");
+    ofstream file("../new_file");
 
     bool is_end = false;
     uint32_t window_size = 0;
@@ -143,6 +143,7 @@ void Server::saveWindow(uint64_t &sum_of_packets, uint32_t window_size, ofstream
             for (auto &el : window)
             {
                 if (el == 0) break;
+                cerr<<"MSG: "<<el->getMsg()<<endl;
                 file<<el->getMsg();
             }
             
