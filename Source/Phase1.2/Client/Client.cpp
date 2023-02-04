@@ -42,12 +42,12 @@ Client::Client()
     struct timeval timeout;
     timeout.tv_sec = 0;
     timeout.tv_usec = TIMEOUT;
-    // setsockopt(this->socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    setsockopt(this->socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 }
 
 void Client::start()
 {
-    ifstream file("./Source/Client/test.txt");
+    ifstream file("../test.txt");
     
     if (!file)
         throw runtime_error("file error");
@@ -63,20 +63,8 @@ void Client::start()
                 break;
             file_sector[i] = ch;
         }
-        // Message *msg = new Message(
-        //     inet_addr("127.0.0.1"), 
-        //     inet_addr("127.0.0.1"), 
-        //     this->packet_id++, 
-        //     0, 
-        //     SERVER_PORT, 
-        //     this->cwnd,
-        //     false, 
-        //     file_sector[MSG_SIZE - 1] == 0,
-        //     false,
-        //     file_sector
-        //     );
 
-            Message *msg = new Message(
+        Message *msg = new Message(
             this->packet_id++, 
             this->cwnd,
             false, 
@@ -84,26 +72,14 @@ void Client::start()
             );
 
         this->window.push_back(msg);
+
         if (this->window.size() == this->cwnd)
         {
-            this->packet_id = 0;
             sendWindow();
         }
     }
     while (this->window.size() > 0 && this->window.size() != this->cwnd)
     {
-        // Message *msg = new Message(
-        //     inet_addr("127.0.0.1"), 
-        //     inet_addr("127.0.0.1"), 
-        //     this->packet_id++, 
-        //     0, 
-        //     SERVER_PORT, 
-        //     this->cwnd,
-        //     false,
-        //     true,
-        //     true,
-        //     ""
-        //     );
         Message *msg = new Message(
             this->packet_id++, 
             this->cwnd,
@@ -118,7 +94,8 @@ void Client::start()
     }
     close(this->socket_fd);
     file.close();
-    cout<<"MAX: "<<max_cwnd<<endl;
+    cout<<"Max cwnd: "<<max_cwnd<<endl<<"ssthresh: "<<ssthresh<<endl;
+    
 }
 
 void Client::sendWindow(bool is_first_call)
@@ -129,8 +106,16 @@ void Client::sendWindow(bool is_first_call)
     }
 
     unsigned char buff[PACKET_SIZE] = { 0 };
-    auto r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
-    if (r < 0 || Message(buff).getPacketId() != cwnd)
+    int r;
+    bool is_sent = false;
+    while (r >= 0)
+    {   
+        Message msg(buff);
+        is_sent = is_sent || (msg.isAck() && msg.getWSize() == window.size() && msg.getPacketId() == this->packet_id - 1);
+        memset(buff, 0, PACKET_SIZE);
+        r = recv(this->socket_fd, buff, PACKET_SIZE, 0);
+    }
+    if (!is_sent)
     {
         if (is_first_call)
         {
@@ -141,17 +126,24 @@ void Client::sendWindow(bool is_first_call)
     }
     else 
     {
+        auto prev_cwnd = cwnd;
         if (is_first_call)
         {
             if (cwnd < ssthresh)
                 cwnd *= 2;
             else
                 cwnd++;
+
             if (max_cwnd < cwnd)
             {
                 max_cwnd = cwnd;
             }
         }
+
+        if (this->packet_id > prev_cwnd)
+            this->packet_id = 0;
+        else
+            this->packet_id = cwnd;
 
         for (auto &el : window)
         {
