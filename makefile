@@ -14,14 +14,14 @@ SRC_FILES_RP := $(wildcard $(SRC_DIR)/Routing/*.cpp, wildcard $(SRC_DIR)/Routing
 
 all: clean server.out client.out router.out server2.out client2.out router2.out routing.out
 
-# server.out: $(SRC_FILES_S)
-# 	${CC} ${SRC_DIR}/Phase1.1/Server/*.cpp ${SRC_DIR}/Phase1.1/Message/*.cpp -o phase1.1/server.out
+server.out: $(SRC_FILES_S)
+	${CC} ${SRC_DIR}/Phase1.1/Server/*.cpp ${SRC_DIR}/Phase1.1/Message/*.cpp -o phase1.1/server.out
 
-# client.out: $(SRC_FILES_C)
-# 	${CC} ${SRC_DIR}/Phase1.1/Client/*.cpp ${SRC_DIR}/Phase1.1/Message/*.cpp -o phase1.1/client.out
+client.out: $(SRC_FILES_C)
+	${CC} ${SRC_DIR}/Phase1.1/Client/*.cpp ${SRC_DIR}/Phase1.1/Message/*.cpp -o phase1.1/client.out
 
-# router.out: $(SRC_FILES_R)
-# 	${CC} ${SRC_DIR}/Phase1.1/Router/*.cpp ${SRC_DIR}/Phase1.1/Message/*.cpp -o phase1.1/router.out
+router.out: $(SRC_FILES_R)
+	${CC} ${SRC_DIR}/Phase1.1/Router/*.cpp ${SRC_DIR}/Phase1.1/Message/*.cpp -o phase1.1/router.out
 
 server2.out: $(SRC_FILES_S2)
 	${CC} ${SRC_DIR}/Phase1.2/Server/*.cpp ${SRC_DIR}/Phase1.2/Message/*.cpp -o phase1.2/server.out
