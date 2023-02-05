@@ -47,7 +47,7 @@ Client::Client()
 
 void Client::start()
 {
-    ifstream file("../test.txt");
+    ifstream file("test.txt");
     
     if (!file)
         throw runtime_error("file error");
@@ -118,7 +118,7 @@ void Client::start()
     }
     close(this->socket_fd);
     file.close();
-    cout<<"MAX: "<<max_cwnd<<endl;
+    cout<<"Max cwnd: "<<max_cwnd<<endl;
 }
 
 void Client::sendWindow(bool is_first_call)
