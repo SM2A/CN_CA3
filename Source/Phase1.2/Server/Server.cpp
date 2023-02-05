@@ -42,7 +42,7 @@ Server::Server()
 
 void Server::start()
 {
-    ofstream file("../new_file");
+    ofstream file("./new_file2");
 
     bool is_end = false;
     short window_size = 0;

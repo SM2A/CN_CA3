@@ -47,7 +47,7 @@ Client::Client()
 
 void Client::start()
 {
-    ifstream file("../test.txt");
+    ifstream file("test.txt");
     
     if (!file)
         throw runtime_error("file error");
